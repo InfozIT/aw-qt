@@ -47,7 +47,7 @@ def _acquire_single_instance_lock(testing: bool) -> QLockFile:
     return lock
 
 
-@click.command("aw-qt", help="A trayicon and service manager for ActivityWatch")
+@click.command("aw-qt", help="A trayicon and service manager for InfozIT Tracker")
 @click.option(
     "--testing", is_flag=True, help="Run the trayicon and services in testing mode"
 )

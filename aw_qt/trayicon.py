@@ -86,7 +86,7 @@ class TrayIcon(QSystemTrayIcon):
     ) -> None:
         QSystemTrayIcon.__init__(self, icon, parent)
         self._parent = parent  # QSystemTrayIcon also tries to save parent info but it screws up the type info
-        self.setToolTip("ActivityWatch" + (" (testing)" if testing else ""))
+        self.setToolTip("InfozIT Tracker" + (" (testing)" if testing else ""))
 
         self.manager = manager
         self.testing = testing
@@ -152,9 +152,9 @@ class TrayIcon(QSystemTrayIcon):
         # Seems to be in agreement with: https://github.com/OtterBrowser/otter-browser/issues/1313
         #   "it seems that the bug is also triggered when creating a QIcon with an invalid path"
         if exitIcon.availableSizes():
-            menu.addAction(exitIcon, "Quit ActivityWatch", lambda: exit(self.manager))
+            menu.addAction(exitIcon, "Quit InfozIT Tracker", lambda: exit(self.manager))
         else:
-            menu.addAction("Quit ActivityWatch", lambda: exit(self.manager))
+            menu.addAction("Quit InfozIT Tracker", lambda: exit(self.manager))
 
         self.setContextMenu(menu)
 
@@ -165,7 +165,7 @@ class TrayIcon(QSystemTrayIcon):
             box.setText(
                 f"Module {module.name} quit unexpectedly"
                 + (
-                    f" after {recent} auto-restart attempts"
+                    f" after {recent} auto-restart attempts
                     f" in {self.RESTART_WINDOW_SECONDS // 60} minutes"
                     if recent >= self.MAX_AUTO_RESTARTS
                     else ""
@@ -210,7 +210,7 @@ class TrayIcon(QSystemTrayIcon):
                     module.start(self.testing)
                     self._record_restart(module.name)
                     self.showMessage(
-                        "ActivityWatch",
+                        "InfozIT Tracker",
                         f"Module {module.name} crashed and was auto-restarted",
                         QSystemTrayIcon.MessageIcon.Warning,
                         5000,
@@ -322,7 +322,7 @@ def run(manager: Manager, testing: bool = False, port: Optional[int] = None) -> 
             QMessageBox.critical(
                 widget,
                 "Systray",
-                "I couldn't detect any system tray on this system. Either get one or run the ActivityWatch modules from the console.",
+                "I couldn't detect any system tray on this system. Either get one or run the InfozIT Tracker modules from the console.",
             )
             sys.exit(1)
 
