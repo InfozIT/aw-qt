@@ -165,7 +165,7 @@ class TrayIcon(QSystemTrayIcon):
             box.setText(
                 f"Module {module.name} quit unexpectedly"
                 + (
-                    f" after {recent} auto-restart attempts
+                    f" after {recent} auto-restart attempts"
                     f" in {self.RESTART_WINDOW_SECONDS // 60} minutes"
                     if recent >= self.MAX_AUTO_RESTARTS
                     else ""
