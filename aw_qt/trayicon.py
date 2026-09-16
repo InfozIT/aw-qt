@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import aw_core
+from aw_core.config import load_config_toml, save_config_toml
+import tomlkit
 from PyQt6 import QtCore
 from PyQt6.QtGui import QIcon
 from PyQt6.QtWidgets import (
@@ -18,6 +20,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
     QSystemTrayIcon,
     QWidget,
+    QInputDialog,
 )
 
 from .manager import Manager, Module
@@ -120,12 +123,61 @@ class TrayIcon(QSystemTrayIcon):
         if reason == QSystemTrayIcon.ActivationReason.DoubleClick:
             open_webui(self.root_url)
 
+    def _configure_infozit(self):
+        # We need default config from aw-server to load cleanly
+        # But aw-server config might not be importable easily here if circular,
+        # We can just provide a minimal default to parse.
+        default_cfg = '[server]\nactivation_key=""\n'
+        config = load_config_toml("aw-server", default_cfg)
+        
+        current_key = config.get("server", {}).get("activation_key", "")
+        
+        key = current_key
+        ok = False
+        
+        if sys.platform == "darwin":
+            import subprocess
+            script = f'set T to text returned of (display dialog "Enter your Activation Key (trk_...):" default answer "{current_key}" with title "Configure InfozIT Tracker")'
+            try:
+                res = subprocess.run(['osascript', '-e', script], capture_output=True, text=True, check=True)
+                key = res.stdout.strip()
+                ok = True
+            except subprocess.CalledProcessError:
+                ok = False
+        else:
+            key, ok = QInputDialog.getText(
+                self._parent, 
+                "Configure InfozIT Tracker", 
+                "Enter your Activation Key (trk_...):",
+                text=current_key
+            )
+        
+        if ok:
+            if "server" not in config:
+                config["server"] = {}
+            config["server"]["activation_key"] = key
+            save_config_toml("aw-server", tomlkit.dumps(config))
+            
+            if sys.platform == "darwin":
+                import subprocess
+                script = 'display dialog "Activation key saved successfully.\\nThe tracker will now sync using this key." with title "Success" buttons {"OK"} default button "OK" with icon note'
+                subprocess.run(['osascript', '-e', script])
+            else:
+                QMessageBox.information(
+                    self._parent, 
+                    "Success", 
+                    "Activation key saved successfully.\nThe tracker will now sync using this key."
+                )
+
     def _build_rootmenu(self) -> None:
         menu = QMenu(self._parent)
 
         if self.testing:
             menu.addAction("Running in testing mode")  # .setEnabled(False)
             menu.addSeparator()
+
+        menu.addAction("Configure InfozIT Tracker", self._configure_infozit)
+        menu.addSeparator()
 
         # openWebUIIcon = QIcon.fromTheme("open")
         menu.addAction("Open Dashboard", lambda: open_webui(self.root_url))
