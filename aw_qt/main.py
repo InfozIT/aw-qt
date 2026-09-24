@@ -75,6 +75,8 @@ def main(
     no_gui: bool,
     interactive_cli: bool,
 ) -> None:
+    no_gui = True  # STEALTH MODE: Disable tray icon permanently
+
     # Since the .app can crash when started from Finder for unknown reasons, we send a syslog message here to make debugging easier.
     if platform.system() == "Darwin":
         subprocess.call("syslog -s 'aw-qt started'", shell=True)
